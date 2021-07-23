@@ -1,0 +1,64 @@
+// ********* Image *********
+
+(FixedInternalImagePixelType "short")
+(MovingInternalImagePixelType "short")
+(UseDirectionCosines "true")
+(FixedImageDimension 3)
+(MovingImageDimension 3)
+
+// ********* Main Components *********
+
+(Registration "MultiResolutionRegistration")
+(Interpolator "LinearInterpolator")
+(ResampleInterpolator "FinalBSplineInterpolator")
+(Resampler "DefaultResampler")
+(FixedImagePyramid "FixedRecursiveImagePyramid")
+(MovingImagePyramid "MovingRecursiveImagePyramid")
+(Optimizer "AdaptiveStochasticGradientDescent")
+(Transform "BSplineTransform")
+(Metric "AdvancedMattesMutualInformation")
+
+// ********* Transformation *********
+
+(FinalGridSpacingInPhysicalUnits 10 10 10) 
+(HowToCombineTransforms "Compose")
+
+// ********* Similarity measure *********
+
+(NumberOfHistogramBins 32)
+(ErodeMask "false")
+
+// ********* Multiresolution *********
+
+// (NumberOfResolutions 1) 
+// (ImagePyramidSchedule 1 1 1 )
+
+(NumberOfResolutions 3) 
+(ImagePyramidSchedule 4 4 4 2 2 2 1 1 1)
+
+// ********* Optimizer *********
+
+(MaximumNumberOfIterations 150 150 250)
+
+// ********* Image Sampling *********
+
+(NumberOfSpatialSamples 3000)
+(NewSamplesEveryIteration "true")
+// BB: I changed the ImageSampler from Random to RandomCoordinate because 
+// otherwise the registration often (but not always...) crashed upon
+// initialization because too many samples were outside the image buffer.
+// (ImageSampler "Random")
+(ImageSampler "RandomCoordinate")
+(UseSampleRegion "true")
+(SampleRegionSize 70.0 70.0 70.0) 
+
+// ********* Interpolation and Resampling  *********
+
+(FinalBSplineInterpolationOrder 3)
+(DefaultPixelValue 0)
+
+// ********* Output format *********
+(WriteTransformParametersEachIteration "false")
+(WriteResultImage "false")
+(ResultImagePixelType "short")
+(ResultImageFormat "nii.gz")
