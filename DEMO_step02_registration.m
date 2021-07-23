@@ -7,6 +7,7 @@
 % command.
 % NOTE: DEMO_step01_alignment_and_distmap.m should have been run before
 %       running this scripts.
+
 clear
 addpath(genpath('bin'),genpath('src'))
 
