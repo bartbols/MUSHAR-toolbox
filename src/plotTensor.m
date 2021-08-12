@@ -27,7 +27,7 @@ addParameter(p,'Y',[])
 addParameter(p,'Z',[])
 addParameter(p,'np',10) % detail of ellipsoid patch
 addParameter(p,'mask',[])
-addParameter(p,'style','ev1') % plot style ('line','ell','stick','sphere')
+addParameter(p,'style','ell') % plot style ('line','ell','stick','sphere')
 addParameter(p,'dir','ev1') % direction of line or stick
 addParameter(p,'linewidth',2,@isscalar)
 addParameter(p,'color','ev1')
@@ -180,8 +180,18 @@ for i=1:n
                         nf          = np^2;      % number of faces per ellipsoid
                         nv          = numel(Xe); % number of vertices per ellipsoid
                     case 'stick'
-                        [Ye,Ze,Xe]  = cylinder(1/2,np*5);
-                        Xe=Xe-0.5;
+                        switch direction
+                            case 'ev1'
+                                [Ye,Ze,Xe]  = cylinder(1/2,np*5);
+                                Xe=Xe-0.5;
+                            case 'ev2'
+                                [Xe,Ze,Ye]  = cylinder(1/2,np*5);
+                                Ye=Ye-0.5;
+                            case 'ev3'
+                                [Xe,Ye,Ze]  = cylinder(1/2,np*5);
+                                Ze=Ze-0.5;
+                        end
+                                
                         nf          = np*5;      % number of faces per ellipsoid
                         nv          = numel(Xe); % number of vertices per ellipsoid
                     case 'sphere'
@@ -210,9 +220,20 @@ for i=1:n
                     
                 case 'stick'
                     % Scale cylinder indicating fibre orientation
-                    Xc = Xe * scale;
-                    Yc = Ye * scale/ratio;
-                    Zc = Ze * scale/ratio;
+                    switch direction
+                        case 'ev1'
+                            Xc = Xe * scale;
+                            Yc = Ye * scale/ratio;
+                            Zc = Ze * scale/ratio;
+                        case 'ev2'
+                            Xc = Xe * scale/ratio;
+                            Yc = Ye * scale;
+                            Zc = Ze * scale/ratio;
+                        case 'ev3'
+                            Xc = Xe * scale/ratio;
+                            Yc = Ye * scale/ratio;
+                            Zc = Ze * scale;
+                    end
                     
                 case 'sphere'
                     Xc = Xe * scale/2;
@@ -272,9 +293,10 @@ switch plot_style
         if isempty(cdata)
             cdata = repmat(color2,size(P,1),1);
         end
-        handle = patch(P(:,1),P(:,2),P(:,3),'k',...
+        handle = patch(P(:,1),P(:,2),P(:,3),'w',...
             'EdgeColor','flat',...
             'FaceVertexCData',cdata,...
+            'FaceColor','flat',...
             'linewidth',p.Results.linewidth,...
             'ButtonDownFcn',@updateLight,...
             'AmbientStrength',0.7,...

@@ -1,4 +1,4 @@
-function [FV_aligned,T] = rigid_align_surface(refSurface,targetSurface,alignedSurface)
+function [FV_aligned,T] = rigid_align_surface(refSurface,sourceSurface,alignedSurface)
 %RIGID_ALIGN_SURFACE dalls ShapeWorks to rigidly align a reference to a
 %target surface using the iterative closest point algorithm. The aligned
 %surface and the rotation matrix is recovered.
@@ -7,8 +7,9 @@ function [FV_aligned,T] = rigid_align_surface(refSurface,targetSurface,alignedSu
 % [FV_aligned,T] = rigid_align_surface(refSurface,targetSurface,alignedModel)
 % 
 % INPUT:
-% refSurface     : stl filename of the reference surface
-% targetSurface  : stl filename of the target surface
+% refSurface     : stl filename of the reference surface to which the
+%                  sourceSurface will be aligned
+% sourceSurface  : stl filename of the original surface to be aligned
 % alignedSurface : stl filename of the aligned surface (will be created)
 % 
 % OUTPUT         
@@ -21,7 +22,7 @@ function [FV_aligned,T] = rigid_align_surface(refSurface,targetSurface,alignedSu
 % alignedSurface = fullfile(tempdir,'aligned.stl');
 if exist(alignedSurface,'file')==2;delete(alignedSurface);end
 shapeworks_cmd = sprintf('shapeworks read-mesh --name=%s transform-mesh --target=%s --type=%s --method=icp --iterations=%d write-mesh --name=%s',...
-        targetSurface,refSurface,'rigid',100,alignedSurface);
+        sourceSurface,refSurface,'rigid',100,alignedSurface);
 [status,cmdout] = system(shapeworks_cmd);
 
 if contains(cmdout,'is not recognized as an internal or external command')
@@ -30,7 +31,7 @@ end
 
 % Recover the transformation matrix 
 FV_aligned = stlread(alignedSurface);
-FV_target  = stlread(targetSurface);
+FV_target  = stlread(sourceSurface);
 [T,eps] = estimateRigidTransform(FV_target.Points',FV_aligned.Points');
 % stlwrite(FV_aligned,alignedModel);
 

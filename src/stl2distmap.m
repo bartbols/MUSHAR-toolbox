@@ -14,7 +14,7 @@ function stl2distmap(stlFile,varargin)
 % distmap_abs:    filename of absolute distance map.
 % NOTE: if distmap_signed and distmap_abs are both empty, only a signed
 %              distance map with the default filename will be created.
-% spacex,sizex,originx, etc.  See ShapeWorks documentation for explanation 
+% spacex,sizex,originx, etc.  See ShapeWorks documentation for explanation
 % of inputs 'space', 'size' and 'origin'
 %
 % OUTPUT: no outputs but file(s) be created.
@@ -55,10 +55,10 @@ spacez         = p.Results.spacez;
 if ~isempty(p.Results.padding)
     fprintf('padding of %.2f is provided. ''origin'' and ''size'' input arguments will be overwritten (if provided)\n',p.Results.padding)
     FV = stlread(stlFile);
-    m = min(FV.vertices);
-    r = range(FV.vertices);
+    m = min(FV.Points);
+    r = range(FV.Points);
     pad = p.Results.padding;
-
+    
     originx = m(1)-pad;
     originy = m(2)-pad;
     originz = m(3)-pad;
@@ -84,19 +84,23 @@ shapeworks_cmd = sprintf('shapeworks read-mesh --name="%s" mesh-to-dt',...
 
 % Optional inputs
 inputList = {'originx','originy','originz',...
-             'sizex','sizey','sizez',...
-             'spacex','spacey','spacez'};
+    'sizex','sizey','sizez',...
+    'spacex','spacey','spacez'};
 for nr = 1 : length(inputList)
     value = eval(inputList{nr});
-    if ~isempty(value)     
+    if ~isempty(value)
         shapeworks_cmd = [shapeworks_cmd sprintf(' --%s=%.3f',...
-            inputList{nr},value)];    
+            inputList{nr},value)];
     end
 end
- shapeworks_cmd = [shapeworks_cmd sprintf(' writeimage --name="%s"',...
-     distmap_signed)];
- 
- % Call ShapeWorks to build the distance map. 
+shapeworks_cmd = [shapeworks_cmd sprintf(' writeimage --name="%s"',...
+    distmap_signed)];
+
+% Call ShapeWorks to build the distance map.
+
+if exist(fileparts(distmap_signed),'dir')~=7
+    mkdir(fileparts(distmap_signed))
+end
 [status,cmdout] = system(shapeworks_cmd);
 if contains(cmdout,'is not recognized as an internal or external command')
     error('shapeworks not found as an external commant. Please install ShapeWorks and try again.')
@@ -112,6 +116,9 @@ c3d_cmd = sprintf('c3d "%s" -flip xy -scale -1.0 -o "%s"',...
 
 % Create absolute distance map.
 if ~isempty(distmap_abs)
+    if exist(fileparts(distmap_abs),'dir')~=7
+        mkdir(fileparts(distmap_abs))
+    end
     c3d_cmd = sprintf('c3d "%s" -dup -times -sqrt -o "%s"',...
         distmap_signed,distmap_abs);
     [status,cmdout] = system(c3d_cmd);
@@ -121,5 +128,5 @@ if ~isempty(distmap_abs)
 end
 
 
-end
+end % of function
 

@@ -1,6 +1,42 @@
-function register_distance_maps(distmapFolder,refDistmap,refModel,parFile,varargin)
-%REGISTER_DISTANCE_MAPS registers distance maps using Elastix.
-
+function results = register_distance_maps(distmapFolder,refDistmap,refModel,parFile,varargin)
+%REGISTER_DISTANCE_MAPS registers all distance maps in a folder to a
+%reference distance map using Elastix.
+%
+% USAGE:
+% results = register_distance_maps(distmapFolder,refDistmap,refModel,parFile,varargin)
+%
+% INPUT:
+% Required inputs:
+% distmapFolder     : folder name with all distance maps (must be in
+%                    .nii.gz format). All files with extension .nii.gz in
+%                    this folder should be distance maps.
+% refDistmap        : filename of reference distance map
+% refModel          : filename of reference STL surface
+% parFile           : filename(s) of elastix parameter file(s) (if multiple
+%                     parameter files are used, provide them as a cell
+%                     array)
+% Optional inputs, provided as 'argument',<value> pairs:
+% selection         : indices of files in distmapFolder to register to the
+%                     reference. Default: all files are registered.
+% transformFolder   : folder name to which elastix transformation files are
+%                     saved. Default: folder 'transform' one level up from
+%                     the distance map folder.
+% resultFolder      : folder name to which registration results are saved.
+%                     Default: same as transformFolder.
+% 
+%
+% OUTPUT:
+% Structure with registration results, containing the following fields:
+% results.X         : list of corresponding vertex coordinates of all shapes
+% results.res_dist  : residual error after registration for all vertices of
+%                     all shapes
+% results.mean_shape : triangulation object with mean shape
+% results.distmap_list : list of filenames of distance maps used for registration
+%
+% Bart Bolsterlee
+% Neuroscience Research Australia
+% August 2021
+%                      
 %% Check input arguments
 p = inputParser;
 addRequired(p,'distmapFolder',@(x) exist(x,'dir')==7)
@@ -53,7 +89,7 @@ ref = stlread(refModel);
 X = NaN([size(ref.Points) length(distmap_list)]); 
 
 % Array with squared distance of transformed surface to original surface.
-res_sq_dist  = NaN([size(ref.Points,1) length(distmap_list)]); 
+res_dist  = NaN([size(ref.Points,1) length(distmap_list)]); 
 
 % Open a wait bar
 h_wait = waitbar(0,'','Name','Registration progress');
@@ -88,7 +124,7 @@ for distmap_nr = 1 : length(distmap_list)
     % should be close to 0.
     D_m = load_untouch_nii(movingDistmap);
     X(:,:,distmap_nr) = transformix_points(ref.Points,transform_file);    
-    res_sq_dist(:,distmap_nr) = interpolate_nii(D_m,X(:,:,distmap_nr));
+    res_dist(:,distmap_nr) = interpolate_nii(D_m,X(:,:,distmap_nr));
     
     % Plot moving model and transformed reference model for a visual
     % check of alignment.
@@ -113,18 +149,15 @@ fprintf('--- Residual distance of transformed reference model to moving model --
 fprintf('%-20s: %s (%s)\n',...
     'Model','mean','SD')
 for distmap_nr = 1 : length(distmap_list)
-    movingDistmap = fullfile(distmapFolder,distmap_list(distmap_nr).name); % distance map of moving model.
-    [~,b,~]  = fileparts(movingDistmap);
-    [~,short_moving_name] = fileparts(b);
     fprintf('%-20s: %.2f ( %.2f)\n',...
-        short_moving_name,...
-        nanmean(sqrt(res_sq_dist(:,distmap_nr))),...
-        nanstd(sqrt(res_sq_dist(:,distmap_nr))))
+        distmap_list(distmap_nr).name,...
+        mean(res_dist(:,distmap_nr)),...
+        std(res_dist(:,distmap_nr)))
 end
 
 %% Write mean shape
 if isempty(resultFolder)
-    resultFolder = fullfile(fileparts(distmapFolder),'mean');
+    resultFolder = transformFolder;
 end
 
 if exist(resultFolder,'dir') ~= 7
@@ -138,8 +171,14 @@ mean_shape = triangulation(ref.ConnectivityList,nanmean(X,3));
 stlwrite(mean_shape,fullfile(resultFolder,'mean_shape.stl'));
 fprintf('Atlas model saved as %s.\n',fullfile(resultFolder,'mean_shape.stl'))
 
-% Save mean models
-save(fullfile(resultFolder,'registration_results.mat'),'mean_shape','X','res_sq_dist','distmap_list')
+% Save registration results
+results.mean_shape   = mean_shape;
+results.X            = X;
+results.res_dist  = res_dist;
+results.distmap_list = distmap_list;
+results.ref          = ref;
+
+save(fullfile(resultFolder,'registration_results.mat'),'-struct','results')
 
 
 end % of function

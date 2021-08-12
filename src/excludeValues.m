@@ -58,8 +58,7 @@ n = prod(sz(1:nd-2));
 tensor = reshape(tensor,[n,3,3]);
 
 % Get diffusion properties
-[L1,L2,L3,MD] = tensor2lambda(tensor);
-FA            = tensor2fa(tensor);
+[L1,L2,L3,MD,FA] = tensor2diffprop(tensor);
 
 % Define thresholds
 bounds = NaN(5,2);

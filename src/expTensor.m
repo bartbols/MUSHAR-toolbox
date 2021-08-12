@@ -25,8 +25,8 @@ function tensor= expTensor(log_vec)
 nd = ndims(log_vec);
 sz = size(log_vec);
 
-if any(sz((nd-1:nd)) ~= [3 3])
-    error('Last two dimensions should be 3x3')
+if sz(nd) ~= 6
+    error('Last dimension should be 6')
 end
 
 
