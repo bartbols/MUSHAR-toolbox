@@ -98,13 +98,16 @@ end
 Xv = X(mask==1);
 Yv = Y(mask==1);
 Zv = Z(mask==1);
-tensor = tensor(mask(:)==1,:,:);
+incl = mask(:)==1;
+tensor = tensor(incl,:,:);
 n = size(tensor,1);
 
 % If custom color data is provided, check that it's of the same length as
 % the tensor field.
-if ~isempty(custom_cdata) && numel(custom_cdata) ~= n
-    error('''cdata'' does not have the same number of elements as the tensor field')
+if ~isempty(custom_cdata)
+    if numel(custom_cdata(incl)) ~= n
+        error('''cdata'' does not have the same number of elements as the tensor field')
+    end
 end
 
 if isnumeric(color)

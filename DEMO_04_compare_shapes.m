@@ -53,6 +53,9 @@ view(0,15)
 % significant. Otherwise, it is not significant (i.e. 95th confidence
 % interval includes 0).
 
+% Note that this example only contains 3 pairs of muscles (6 muscles in
+% total), which is not sufficient for any statistical analysis. So this is
+% just for demonstration purposes only.
 bs_results = bootstrap_surface(Xs,...       % 2D array of all vertices (rows) of all shapes (column) - see bootstrap_surface.m for formatting
     results.mean_shape.ConnectivityList,... % list of connectivity (faces) of vertices in Xs
     group1,group2,... % lists of indices of shapes in group 1 and group2 (the effect is group2 minus group1)

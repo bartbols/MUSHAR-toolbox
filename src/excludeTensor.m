@@ -1,8 +1,8 @@
-function [tensor_out,isOutOfRange,bounds] = excludeValues(tensor,varargin)
-%EXCLUDEVALUES Sets values in diffusion tensor field S to NaN if diffusion
+function [tensor_out,isOutOfRange,bounds] = excludeTensor(tensor,varargin)
+%EXCLUDETENSOR Sets values in diffusion tensor field S to NaN if diffusion
 %properties are outside the specified boundaries.
 %
-% [tensor_out,isOutOfRange ] = excludeValues(tensor,varargin)
+% [tensor_out,isOutOfRange ] = excludeTensor(tensor,varargin)
 % 
 % REQUIRED INPUT:
 % tensor   : tensor field where the last two dimensions are 3x3
@@ -127,7 +127,7 @@ end
 
 % Print results to screen
 if p.Results.print == true
-    fprintf('in excludeValues.m:\n')
+    fprintf('in excludeTensor.m:\n')
     fprintf('%d values (%.1f%%) were already NaN \n',...
         sum(wasNaN_already),sum(wasNaN_already) / n*100)
     fprintf('%d values (%.1f%%) were outside of the range\n',...

@@ -2,8 +2,22 @@ function tensor_rot = rotateTensor(tensor,R)
 %ROTATETENSOR Rotates tensor field with rotation matrix R following:
 % Trot = R' * tensor * R
 %
+% USAGE: tensor_rot = rotateTensor(tensor,R)
+%
 % INPUT:
-% tensor field
+% tensor : n-dimensional tensor field. The last two dimensions should be 3x3,
+%          containing the tensor for that voxel. Also accepted is the
+%          tensor in vector format, in which case the last dimensions
+%          should be 6 (see vec2tensor.m for difference between vector and
+%          full tensor format).
+% R      : 3x3 rotation matrix
+%
+% OUTPUT:
+% rotated tensor field
+%
+% Bart Bolsterlee
+% Neuroscience Research Australia
+% May 2021
 
 %% Get input dimensions.
 nd = ndims(tensor);

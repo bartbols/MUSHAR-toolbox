@@ -22,7 +22,12 @@
 %     'example_data/DTI/01_tensor.nii.gz')
 clear
 dataFolder  = 'example_data';
-spacing_mm  = 10; % grid spacing in mm
+
+% Define grid spacing in mm. A regular grid of points will be generated
+% inside the reference shape with this spacing. It is set here to a rather 
+% coarse grid with 5 mm spacing to have a manageable number for example 
+% purposes only. It can be set to lower values for more detailed analyses.
+spacing_mm  = 5; 
 
 %% Step 1: make a grid of points in the mean shape
 filename.refModel          = fullfile(dataFolder,'registration','step02','ref_shape.stl');
@@ -43,6 +48,7 @@ dist2surf = interpolate_nii(filename.refDistmap_signed,G_ref);
 isInside = dist2surf < 0;
 G_ref = G_ref(isInside,:);
 
+% Plot the grid points.
 figure('Color','w');hold on
 patch('Vertices',refModel.Points,...
     'Faces',refModel.ConnectivityList,...
@@ -111,11 +117,16 @@ for nr = 1 : nShapes
     % log-Euclidean domain, so the diffusion tensor first needs to be
     % log-transformed.
     
+    % Load tensor file.
     filename.tensor = fullfile(tensorFolder,sprintf('%02d_tensor.nii.gz',nr)); 
-    tensor          = load_untouch_nii(filename.tensor); % loads tensor file.
-    tensor.img      = logTensor(vec2tensor(tensor.img)); % log transforms the tensor (see logTensor.m for details)
+    tensor          = load_untouch_nii(filename.tensor); 
     
-    % Interpolated tensor in vector format:
+    % Log transform the tensor (see logTensor.m for details). This is the
+    % step that takes the longest to compute.
+    tensor.img      = logTensor(vec2tensor(tensor.img)); 
+    
+    % Interpolate tensor in vector format. Once in log-Euclidean domain,
+    % normal interpolation can be used.
     logvec_ip = interpolate_nii(tensor,G_glob(:,:,nr),'linear');
     
     % Transform back to Euclidean domain.
@@ -136,7 +147,6 @@ for nr = 1 : nShapes
     % Store tensor at corresponding locations in vector format.
     TENSOR(:,:,nr) = tensor2vec(tensor_loc);
     fprintf(' completed.\n')
-
 end
 
 % Save the grid locations and the tensor.

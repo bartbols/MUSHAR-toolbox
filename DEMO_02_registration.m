@@ -21,8 +21,7 @@ filename.refModel   = fullfile(dataFolder,'surface','aligned','01.stl');
 
 % Set parameter files for Elastix: similarity transform followed by a
 % b-spline transform with a grid spacing of 10x10x10 mm
-% parfile = {'parfiles/parameters_BSpline10.txt'};
-parfile = {'parfiles/parameters_BSpline10_tmp.txt'};
+parfile = {'parfiles/parameters_BSpline10.txt'};
 
 results01 = register_distance_maps(...
     fullfile(dataFolder,'distmap','abs'),...

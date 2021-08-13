@@ -17,8 +17,8 @@ function results = bootstrap_surface(X,conn,group1,group2,varargin)
 % group 2 : mx1 indices of surfaces in group 2.
 %
 % Optional input arguments, provided as 'argument',<value> pairs:
-% N      : number of samples from each group to draw to determine the 95%
-%          confidence intervals. Default: N=1000
+% N      : number of bootstrap replicates to determine the sampling
+%          distribution. Default: N=1000
 % paired : if true, the shapes in group 1 and group 2 are paired (e.g.,
 %          observations on the same shape before/after some intervention).
 %          bootstrapping will then sample from the difference vectors
@@ -76,7 +76,7 @@ addParameter(p,'ub_pct',97.5,@isscalar)
 addParameter(p,'proj',false)
 parse(p,X,conn,group1,group2,varargin{:});
 
-
+% Store some options in the results structure.
 results.options.N           = p.Results.N;   % number of bootstrap replicates
 results.options.biascorr    = p.Results.biascorr;
 results.options.align       = p.Results.align;
@@ -94,13 +94,13 @@ if results.options.align == true
     X = rigid_align_to_mean(X);
 end
 
-if p.Results.paired == true
+if results.options.paired == true
     if n1 ~= n2
         error('Unequal number of samples in groups. For paired-samples bootstrapping the same number of shapes must be in group 1 and 2.')
     end
 end
 
-if p.Results.flipnormals == true
+if results.options.flipnormals == true
     % Change order of connectivity list to make surface normals point in
     % the opposite direction.
     conn = conn(:,[2 1 3]);
@@ -116,7 +116,7 @@ d_vec = TR2.Points - TR1.Points;
 N1 = vertexNormal(TR1);
 sgn = sign(sum(d_vec .* N1,2));
 
-if p.Results.proj == true
+if results.options.proj == true
     % Magnitude and direction of projection of displacement vector on normal vector
     projection = d_vec .* N1; % projection of displacement vector on normal vector
     results.avg = sgn .* sqrt(sum(projection.^2,2));
