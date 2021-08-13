@@ -5,11 +5,10 @@
 %
 % This step requires elastix to be installed and recognised as an external
 % command.
-% NOTE: DEMO_step01_alignment_and_distmap.m should have been run before
-%       running this scripts.
+% NOTE: DEMO_01_alignment_and_distmap.m should have been run before
+%       running this script.
 
 clear
-addpath(genpath('bin'),genpath('src'))
 dataFolder           = fullfile('example_data');
 
 %% Registration step 1: Register distance maps to reference scan
