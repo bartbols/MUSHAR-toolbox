@@ -1,7 +1,6 @@
 ## MUSHAR: A MATLAB toolbox for three-dimensional reconstruction and analysis of muscle shape and architecture.
-![Fibre-orientation](img/mean-fibre-orient.png)
 <img src="img/mean-fibre-orient.png" alt="Fibre-orientations"
-	title="Individual and group-averaged fibre orientation" width="150" height="100" />
+	title="Individual and group-averaged fibre orientation" width="250"/>
     
 ## Features
 1. Establish point-to-point correspondence on surface and inside volumes through non-rigid registration of distance maps.
