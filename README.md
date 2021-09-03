@@ -9,7 +9,7 @@
 ## Installation
 The following software tools should be installed and made available on the command line:
 * Matlab (developed and tested in version R2019b)
-* [Shapeworks](http://sciinstitute.github.io/ShapeWorks/)
+* [Shapeworks](http://sciinstitute.github.io/ShapeWorks/) (developed and tested on version 6.0.0-RC9)
 * [Elastix](https://elastix.lumc.nl/) (developed and tested on version 4.7)
 
 
