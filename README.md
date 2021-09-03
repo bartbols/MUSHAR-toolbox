@@ -11,12 +11,16 @@
 1. Visualization of changes in shape and fibre orientations.
 
 ## Installation
+* Install Matlab (developed and tested in version R2019b)
+* Add the MUSHAR-toolbox to the Matlab path.
+
 The following software tools should be installed and made available on the command line:
-* Matlab (developed and tested in version R2019b)
-* [Shapeworks](http://sciinstitute.github.io/ShapeWorks/) (developed and tested on version 6.0.0-RC9)
-* [Elastix](https://elastix.lumc.nl/) (developed and tested on version 4.7)
+* [Shapeworks](http://sciinstitute.github.io/ShapeWorks/) (developed and tested in version 6.0.0-RC9)
+* [Elastix](https://elastix.lumc.nl/) (developed and tested in version 4.7)
 
 ## Getting started
 The DEMO scripts will guide you through the main steps involved. Modify these scripts to customize your own analysis.
+
+
 
 
