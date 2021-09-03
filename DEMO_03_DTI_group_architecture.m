@@ -8,20 +8,8 @@
 % Arsigny, V., Fillard, P., Pennec, X., Ayache, N., 2006. Log-Euclidean
 % metrics for fast and simple calculus on diffusion tensors. Magn Reson Med
 % 56 (2),p 411-421.http://doi.org/10.1002/mrm.20965
-
-% 01 = RAND05
-% 02 = RAND23
-% 03 = RAND06
-% 04 = RAND18
-% 05 = RAND10
-% 06 = RAND17
-
-% folder = 'C:\Users\b.bolsterlee\Documents\Working\shape_and_fibre_modelling\TOPHY\data\DTI\RAND05';
-% MakeTensor_map(fullfile(folder,'RAND05_DTI_LPCA.fib.gz'),...
-%     fullfile(folder,'RAND05_DTI_LPCA.nii.gz'),[0 1],...
-%     'example_data/DTI/01_tensor.nii.gz')
 clear
-dataFolder  = 'example_data';
+dataFolder  = fullfile(pwd,'example_data');
 
 % Define grid spacing in mm. A regular grid of points will be generated
 % inside the reference shape with this spacing. It is set here to a rather 

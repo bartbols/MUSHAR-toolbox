@@ -49,7 +49,7 @@ copyfile(fullfile(dataFolder,'registration','step01','mean_shape.stl'),...
 dims = load(fullfile(dataFolder,'distmap','dimensions.mat'));
 
 stl2distmap(...
-    refModel,...
+    filename.refModel,...
     'distmap_signed',filename.refDistmap_signed,...
     'distmap_abs',filename.refDistmap_abs,...
     'originx', dims.origin(1),...
@@ -73,7 +73,7 @@ results02 = register_distance_maps(...
 
 %% Visually inspect the result of registration
 % Load the registration results
-n_surf = size(results.X,3);
+n_surf = size(results02.X,3);
 
 % NOTE: The transformed reference surface should closely match the original
 %       model.
@@ -91,7 +91,7 @@ for nr = 1 : n_surf
         'EdgeColor','r','EdgeAlpha',0.2);
     
     % Reference model transformed to target
-    TR = triangulation(results.mean_shape.ConnectivityList, results02.X(:,:,nr));
+    TR = triangulation(results02.mean_shape.ConnectivityList, results02.X(:,:,nr));
     hr = plotSurface(TR,'FaceColor','none','EdgeColor','k');
     legend([ho hr],{'original','transformed reference'})
     title(sprintf('Residual error: %.2f mm',mean(results02.res_dist(:,nr)))) 
@@ -105,7 +105,7 @@ view(0,15)
 
 %% Show the mean shape and the individual shapes
 figure('Color','w');hold on
-hm = plotSurface(results.mean_shape,...
+hm = plotSurface(results02.mean_shape,...
     'FaceColor','none',...
     'EdgeColor','k',...
     'LineWidth',2);
@@ -113,7 +113,7 @@ view(0,15)
 colors = linspecer(n_surf);
 h = zeros(1,n_surf);
 for nr = 1 : n_surf
-    TR = triangulation(results.mean_shape.ConnectivityList,results.X(:,:,nr));
+    TR = triangulation(results02.mean_shape.ConnectivityList,results02.X(:,:,nr));
     h(nr) = plotSurface(TR,...
         'EdgeColor',colors(nr,:),'FaceColor',colors(nr,:),...
         'EdgeAlpha',0.5,'FaceAlpha',0.2);
@@ -122,6 +122,3 @@ end
 legend([hm h],[{'mean shape'} txt]);
 set(gca,'CLipping','off')
 view(0,15)
-
-
-

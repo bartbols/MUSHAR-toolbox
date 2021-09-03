@@ -6,7 +6,7 @@
 
 clear
 addpath(genpath('bin'),genpath('src'))
-dataFolder = fullfile('../data');
+dataFolder = fullfile(pwd,'example_data');
 
 %% Rigidly align all surfaces to a reference
 

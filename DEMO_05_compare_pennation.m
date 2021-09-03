@@ -14,7 +14,7 @@
 % shape 6: subject 3, after training
 
 clear
-dataFolder  = 'example_data';
+dataFolder  = fullfile(pwd,'example_data');
 
 group1 = [1 3 5]; % list of shapes before training
 group2 = [2 4 6]; % list of shapes after training (order should match group 1 for paired comparisons)
