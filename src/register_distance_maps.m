@@ -23,6 +23,10 @@ function results = register_distance_maps(distmapFolder,refDistmap,refModel,parF
 %                     the distance map folder.
 % resultFolder      : folder name to which registration results are saved.
 %                     Default: same as transformFolder.
+% mask_threshold    : a binary mask with values below this threshold is
+%                     used to target registration to the shape of interest.
+%                     The mask is filled on 2D transverse slices. Default:
+%                     [] (no mask is used)
 % 
 %
 % OUTPUT:
@@ -48,6 +52,7 @@ addParameter(p,'transformFolder',[])
 addParameter(p,'resultFolder',[])
 addParameter(p,'selection',[])
 addParameter(p,'overwrite',true)
+addParameter(p,'mask_threshold',[])
 % addParameter(p,'makeatlas',true,@(x) x==0 || x==1 || islogical(x) )
 
 parse(p,distmapFolder,refDistmap,refModel,parFile,varargin{:});
@@ -91,6 +96,20 @@ X = NaN([size(ref.Points) length(distmap_list)]);
 % Array with squared distance of transformed surface to original surface.
 res_dist  = NaN([size(ref.Points,1) length(distmap_list)]); 
 
+% Make a mask to target registration to the image volume nearest to the 
+% actual shape.
+if ~isempty(p.Results.mask_threshold)
+    M = load_untouch_nii(refDistmap);
+    M.img = M.img < p.Results.mask_threshold;
+    mask_name = fullfile(tempdir,'temp_mask.nii.gz');
+    for k = 1 : size(M.img,3)
+        M.img(:,:,k) = cast(imfill(M.img(:,:,k)~=0,'holes'),'like',M.img);
+    end
+    save_untouch_nii(M,mask_name)
+else
+    mask_name = [];
+end
+
 % Open a wait bar
 h_wait = waitbar(0,'','Name','Registration progress');
 for distmap_nr = 1 : length(distmap_list)
@@ -116,7 +135,9 @@ for distmap_nr = 1 : length(distmap_list)
     % Register the distance maps using Elastix. Save only the transform
     % file.
     if overwrite == true || exist(transform_file,'file')~=2
-        reg_elastix(refDistmap,movingDistmap,parFile,'transform_file',transform_file)
+
+        reg_elastix(refDistmap,movingDistmap,parFile,'transform_file',transform_file,...
+            'mask',mask_name)
     end
     
     % Calculate the residual distance on the squared distance map of the moving

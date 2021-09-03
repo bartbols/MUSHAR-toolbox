@@ -1,9 +1,12 @@
 function results = bootstrap_surface(X,conn,group1,group2,varargin)
 %BOOTSTRAP_SURFACE Calculates the mean and confidence interval of the
-% distance between two groups of surfaces. The distance is defined as the
-% distance of the averaged surface of group 2 to the averaged surface of
-% group 1. Bootstrapping is used to calculate the sampling distribution and
-% lower/upper bounds.
+% distance between two groups of surfaces. The distance is defined EITHER
+% as the distance of points (vertices) on the mean surface of group 2 to
+% *any* point on the mean surface of group 1 (i.e., the point-to-surface
+% distance) OR as the signed Euclidean distance between corresponding 
+% points in group 1 and 2 (point-to-point distance). Bootstrapping is used 
+% to calculate the sampling distribution and lower/upper bounds of the 
+% difference in surface shape between groups.
 %
 % USAGE:
 % results = boostrap_surface(X,conn,group1,group2,varargin)
@@ -11,7 +14,8 @@ function results = bootstrap_surface(X,conn,group1,group2,varargin)
 % INPUT
 % X   : m x n array of m corresponding points on a selection of n surfaces.
 %       Each column m is expected to be the rolled-out vector of a p x 3
-%       array of p vertices.
+%       array of p vertices (top third of X contains x-values, middle third
+%       y-values and bottom third z-values).
 % conn    : ConnectivityList of shape.
 % group 1 : nx1 indices of surfaces in group 1.
 % group 2 : mx1 indices of surfaces in group 2.
@@ -19,6 +23,22 @@ function results = bootstrap_surface(X,conn,group1,group2,varargin)
 % Optional input arguments, provided as 'argument',<value> pairs:
 % N      : number of bootstrap replicates to determine the sampling
 %          distribution. Default: N=1000
+% method : method for calculating distances between mean surfaces:
+%          'p2s' - point-to-surface distance (default)
+%                  With this option, point2trimesh is used to determine,
+%                  for each vertex of the surface of group 2, the shortest 
+%                  signed (negative/positive = inside/outside) distance to 
+%                  the *surface* of group 1. (This option is slow, especially
+%                  when the surface has many points.)
+%          'p2p' - point-to-point distance
+%                  With this option, the signed point-to-point distance is
+%                  calculated as the Euclidean distance between 
+%                  corresponding points of the mean surface of group 1 and 
+%                  group 2. The sign is equal to the sign of the projection
+%                  of the normal vector on the difference vector (group 2 
+%                  minus group 1) so that negative/positive values indicate
+%                  that points in the mean shape of group 2 are
+%                  inside/outside the mean shape of group 1.
 % paired : if true, the shapes in group 1 and group 2 are paired (e.g.,
 %          observations on the same shape before/after some intervention).
 %          bootstrapping will then sample from the difference vectors
@@ -29,21 +49,20 @@ function results = bootstrap_surface(X,conn,group1,group2,varargin)
 % print  : if true, some summary statistics are printed to the screen.
 %          Default: true
 % maxdist: maximum distance for the colorbar (just for plotting purposes).
+%          Default: maximum distance in sampling distribution.
 % binsize: bin size for histogram. Default: 1
 % align  : if true, all shapes are rigidly aligned to the group mean using
-%          procrustes alignment
+%          procrustes alignment. Default: false
 % biascorr : if true, the mean of the sampling distribution is shifted to
 %            the mean of the original dataset to reduce sampling bias in
-%            the estimates of the confidence interval.
+%            the estimates of the confidence interval. Default: true
 % lb_pct : percentile for the lower bound of the confidence interval.
 %          Default: 2.5
 % ub_pct : percentile for the lower bound of the confidence interval.
 %          Default: 97.5
-% proj   : use projection of displacement vector on normal vector.
-%          Default: false
 % flipnormals: if true, the normals of the surface model are flipped in
-%              direction (will only affect the sign of the distance between
-%              corresponding points). Default: false.
+%              direction (will only affect the sign of the distance).
+%              Default: 'auto' (automatically detect correct orientation)
 %
 % OUTPUT
 % structure with the following fields:
@@ -63,6 +82,7 @@ addRequired(p,'conn',@isnumeric)
 addRequired(p,'group1',@isnumeric)
 addRequired(p,'group2',@isnumeric)
 addParameter(p,'N',1000)
+addParameter(p,'method','p2s')
 addParameter(p,'paired',false)
 addParameter(p,'biascorr',true)
 addParameter(p,'align',false)
@@ -73,17 +93,16 @@ addParameter(p,'maxdist',[])
 addParameter(p,'binsize',1)
 addParameter(p,'lb_pct',2.5,@isscalar)
 addParameter(p,'ub_pct',97.5,@isscalar)
-addParameter(p,'proj',false)
 parse(p,X,conn,group1,group2,varargin{:});
 
 % Store some options in the results structure.
 results.options.N           = p.Results.N;   % number of bootstrap replicates
+results.options.method      = p.Results.method; % method: 'p2p' or 'p2s'
 results.options.biascorr    = p.Results.biascorr;
 results.options.align       = p.Results.align;
 results.options.flipnormals = p.Results.flipnormals;
 results.options.lb_pct      = p.Results.lb_pct;
 results.options.ub_pct      = p.Results.ub_pct;
-results.options.proj        = p.Results.proj;
 results.options.paired      = p.Results.paired;
 
 n1 = numel(group1); % number of shapes in group 1
@@ -93,6 +112,8 @@ if results.options.align == true
     % Pre-align all shapes to the mean shape using procrustes aligment.
     X = rigid_align_to_mean(X);
 end
+
+rng(0); % reset random number generator for reproducible results.
 
 if results.options.paired == true
     if n1 ~= n2
@@ -106,23 +127,22 @@ if results.options.flipnormals == true
     conn = conn(:,[2 1 3]);
 end
 
-
-% Calculate shape change of the original data
+% Calculate mean shape change of the original data
 X1  = reshape(mean(X(:,group1),2),[],3);
 X2  = reshape(mean(X(:,group2),2),[],3);
-TR1 = triangulation(conn,X1); % mean of group 1
-TR2 = triangulation(conn,X2); % mean of group 2
-d_vec = TR2.Points - TR1.Points;
-N1 = vertexNormal(TR1);
-sgn = sign(sum(d_vec .* N1,2));
-
-if results.options.proj == true
-    % Magnitude and direction of projection of displacement vector on normal vector
-    projection = d_vec .* N1; % projection of displacement vector on normal vector
-    results.avg = sgn .* sqrt(sum(projection.^2,2));
-else
-    % Magnitude and direction of displacement vector
-    results.avg = sgn .* sqrt(sum(d_vec.^2,2));
+switch results.options.method
+    case 'p2p' % point-to-point
+        d_vec = X2-X1; % difference vector
+        TR1   = triangulation(conn,X1); % mean surface of group 1
+        N1    = vertexNormal(TR1);       % normal vectors of mean surface of group 1
+        sgn   = sign(sum(d_vec .* N1,2)); % sign of displacement vector and normal vector
+        results.avg = sgn .* sqrt(sum((d_vec).^2,2));  % signed point-to-point distance
+    case 'p2s' % point-to-surface
+        % calculate the signed point-to-surface distance
+        results.avg = point2trimesh(...
+            'Faces',conn,...
+            'Vertices',X1,...
+            'QueryPoints',X2);
 end
 
 hwait = waitbar(0,'','Name','Bootstrapping surface');
@@ -145,22 +165,22 @@ for ii = 1 : results.options.N
     end
     
     % Calculate the mean shapes in each sampled group.
-    X1_sampled = reshape(mean(X(:,sample1),2),[],3);
-    X2_sampled = reshape(mean(X(:,sample2),2),[],3);
+    X1s = reshape(mean(X(:,sample1),2),[],3);
+    X2s = reshape(mean(X(:,sample2),2),[],3);
     
-    % Make reference shape and distance map of reference shape.
-    TR1 = triangulation(conn,X1_sampled);
-    TR2 = triangulation(conn,X2_sampled);
-    d_vec = TR2.Points - TR1.Points;
-    N1 = vertexNormal(TR1);
-    sgn = sign(sum(d_vec .* N1,2));
-    if results.options.proj == true
-        % Magnitude and direction of projection of displacement vector on normal vector
-        projection = d_vec .* N1;
-        results.distr(:,ii) = sgn .* sqrt(sum(projection.^2,2));
-    else
-        % Magnitude and direction of displacement vector
-        results.distr(:,ii) = sgn .* sqrt(sum(d_vec.^2,2));
+    switch results.options.method
+        case 'p2p' % point-to-point
+            d_vecs = X2s - X1s; % difference vector
+            TR1s   = triangulation(conn,X1);  % mean surface of sampled group 1
+            N1s    = vertexNormal(TR1s);       % normal vectors of sampled mean surface of group 1
+            sgn    = sign(sum(d_vecs .* N1s,2)); % sign of displacement vector and normal vector
+            results.distr(:,ii) = sgn .* sqrt(sum((d_vecs).^2,2));  % signed point-to-point distance
+        case 'p2s' % point-to-surface
+            % calculate the signed point-to-surface distance
+            results.distr(:,ii) = point2trimesh(...
+                'Faces',conn,...
+                'Vertices',X1s,...
+                'QueryPoints',X2s);
     end
 end
 close(hwait)
@@ -169,9 +189,9 @@ fprintf('\n')
 if results.options.biascorr == true
     % Bias correction: correct sampling distribution to have a mean equal to
     % the true mean
-    results.bias = nanmean(results.distr,2) - results.avg;
+    results.bias  = nanmean(results.distr,2) - results.avg;
     results.distr = results.distr - results.bias;
-    results.avg = results.avg;
+    results.avg   = results.avg;
 end
 % Calculate lower and upper bound of the 95% confidence interval. Correct
 % for small interpolation errors by subtracting the distance (d0) of the mean
@@ -202,7 +222,7 @@ if p.Results.plot == true
     hs = zeros(1,4);
     for i = 1 : 4
         hs(i) = subplot(2,4,i);hold on
-        hp = patch('Vertices',X1_sampled,...
+        hp = patch('Vertices',X1s,...
             'Faces',p.Results.conn,...
             'FaceColor','interp',...
             'EdgeColor','none',...
@@ -274,13 +294,14 @@ if p.Results.plot == true
                 'CLim',[0 2])
         else
             xlabel('Distance (mm)')
-            ylabel('Fraction of vertices')
         end
+        ylabel('Fraction of vertices')
     end
     set(hs,'Clipping','off')
     global hlink
     hlink = linkprop(hs,{'XLim','YLim','ZLim','View'});
 end
+
 
 end % of function
 

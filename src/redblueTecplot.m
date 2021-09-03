@@ -22,7 +22,11 @@ bT=[172 207 240 247 199 98 43]/255;
 pos=linspace(0,1,7);
 
 %Interpolates given the colormap positions
-posDesired=linspace(0,1,m);
+if isscalar(m)
+    posDesired=linspace(0,1,m);
+else
+    posDesired = m;
+end
 r = interp1(pos,rT,posDesired);
 g = interp1(pos,gT,posDesired);
 b = interp1(pos,bT,posDesired);

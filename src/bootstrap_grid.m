@@ -66,6 +66,8 @@ results.distr = NaN(size(X,1),N);
 n1 = numel(group1); % number of shapes in group 1
 n2 = numel(group2); % number of shapes in group 2
 
+rng(0); % reset random number generator for reproducible results.
+
 if results.options.paired == true
     if n1 ~= n2
         error('Unequal number of samples in groups. For paired-samples bootstrapping the same number of shapes must be in group 1 and 2.')

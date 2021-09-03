@@ -22,18 +22,20 @@ group2 = [2 4 6]; % list of shapes after training (order should match group 1 fo
 results = load(fullfile(dataFolder,'registration','step02','registration_results.mat'));
 
 % Roll out vertices per shape into a vector so that each column of Xs
-% contains all coordinates (x,y and z) of the vertices of a shape.
+% contains all coordinates (x,y and z) of the vertices of a shape. The top
+% third of rows contains x-coordinates, the middle third y and the bottom
+% third z.
 Xs = reshape(results.X,[],size(results.X,3));
 
 %% Bootstrap change in shape.
-% The effect of training is defined as the distance between corresponding
-% vertices before and after training. The sign of the distance is
-% determined by comparing the displacement vector with the normal
-% direction. If the projection of the displacement vector on the normal
-% vector is positive, the displacement is positive (local expansion: the
-% point after training is outside the surface before training); otherwise it is
-% negative (local contraction). This assumes that the normal vectors to the 
-% surface point outside, which needs to be verified.
+% The effect of training is defined as the distance from the mean surface
+% after training to any point on the surface of the mean surface before
+% training (i.e., the point-to-surface distance rather than point-to-point
+% distance). The sign of the distance indicates if the point after training
+% is located outside the mean surface before training (positive, local 
+% expansion) or inside (negative, local contraction). The algorithm used
+% to calculate the point-to-surface distance assumes that the normal 
+% vectors to the surface point outside, which needs to be verified.
 
 % Verify that the normal vector of the mean shape points outside.
 figure('Color','w')
@@ -45,12 +47,12 @@ view(0,15)
 % training on local change in shape. In essence, the bootstrapping approach
 % replicates the study N times by randomly sampling (with replacement) from
 % the existing shapes. For each bootstrapping replicate, the signed change
-% in shape for all vertices is determined. This will give for each vertex
+% in shape is determined for all vertices. This will give for each vertex
 % a distribution of N values for local changes in shape. If the 2.5th
 % percentile of this distribution is above 0, the local expansion in shape
 % is considered statistically significant. If the 97.5th percentile of the
 % distribution is below 0, the local contraction of the shape is considered
-% significant. Otherwise, it is not significant (i.e. 95th confidence
+% significant. Otherwise, it is not significant (i.e. 95% confidence
 % interval includes 0).
 
 % Note that this example only contains 3 pairs of muscles (6 muscles in
@@ -64,5 +66,5 @@ bs_results = bootstrap_surface(Xs,...       % 2D array of all vertices (rows) of
     'maxdist',5,...   % maxdist is just for plotting purposes
     'N',1000,...       % number of bootstrap replicates. If not provided, the default of 1000 is used.
     'align',true,...  % if true, all shapes are rigiidly aligned with Procrustes alignment before bootstrapping.
-    'flipnormals',false); % set to true if the normal vectors are pointing inside.
-
+    'flipnormals',false,... % set to true if the normal vectors are pointing inside.
+    'method','p2s'); % calculate point-to-surface distance
