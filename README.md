@@ -1,5 +1,4 @@
-## MUSHAR-toolbox
-## A MATLAB toolbox for three-dimensional reconstruction and analysis of muscle shape and architecture.
+## MUSHAR: A MATLAB toolbox for three-dimensional reconstruction and analysis of muscle shape and architecture.
 
 ## Features
 1. Establish point-to-point correspondence on surface and inside volumes through non-rigid registration of distance maps (using [Elastix](https://elastix.lumc.nl/)).
