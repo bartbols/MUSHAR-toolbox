@@ -16,4 +16,7 @@ The following software tools should be installed and made available on the comma
 * [Shapeworks](http://sciinstitute.github.io/ShapeWorks/) (developed and tested on version 6.0.0-RC9)
 * [Elastix](https://elastix.lumc.nl/) (developed and tested on version 4.7)
 
+## Getting started
+The DEMO scripts will guide you through the main steps involved. Modify these scripts to customize your own analysis.
+
 
