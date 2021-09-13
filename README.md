@@ -24,6 +24,11 @@ The following software tools should be installed and made available on the comma
 * Run the demo scripts to  guide you through the main steps.
 * Modify the scripts to set up your own analysis.
 
+## Paper
+Read the accompanying paper on [bioRxiv](https://doi.org/10.1101/2021.09.08.459536) (or see preprint.pdf).
+
+
+
 
 
 
