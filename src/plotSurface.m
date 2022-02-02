@@ -74,7 +74,7 @@ if p.Results.ShowNormals == true
 end
 
 % Turn on some light, if no light objects exist
-if isempty(findobj(gcf,'Type','light'))
+if isempty(findobj(gca,'Type','light'))
     light('position',[0 1 0]);
     light('position',[0 -1 0]);
 end

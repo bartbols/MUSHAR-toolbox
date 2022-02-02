@@ -103,7 +103,7 @@ if exist(fileparts(distmap_signed),'dir')~=7
 end
 [status,cmdout] = system(shapeworks_cmd);
 if contains(cmdout,'is not recognized as an internal or external command')
-    error('shapeworks not found as an external commant. Please install ShapeWorks and try again.')
+    error('shapeworks not found as an external command. Please install ShapeWorks and try again.')
 end
 
 % Flip x and y direction to make distance map compatible with the NIfTI
