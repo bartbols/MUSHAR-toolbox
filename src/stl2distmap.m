@@ -2,6 +2,9 @@ function stl2distmap(stlFile,varargin)
 %STL2DISTMAP Calls ShapeWorks and Convert3D to create a signed/absolute
 %distance map from an STL file.
 %
+% Tested to work with ShapeWorks v6.2.1. May not work with earlier
+% versions.
+%
 % Expects ShapeWorks and Convert3D to be installed and added to the path.
 %
 % INPUT:
@@ -11,61 +14,40 @@ function stl2distmap(stlFile,varargin)
 % OPTIONAL INPUT:
 % distmap_signed: filename of signed distance map. Default: same name as STL-file but
 %                 with extension '_signed.nii.gz'.
+% padding       : padding around mesh (determines bounding box of distance
+%                 map image). Default: 5 (same units as mesh)
+% spacex        : voxel size of distance map in x-direction. Default : 1
+% spacey        : voxel size of distance map in y-direction. Default : 1
+% spacez        : voxel size of distance map in z-direction. Default : 1
+
 % distmap_abs:    filename of absolute distance map.
 % NOTE: if distmap_signed and distmap_abs are both empty, only a signed
 %              distance map with the default filename will be created.
-% spacex,sizex,originx, etc.  See ShapeWorks documentation for explanation
-% of inputs 'space', 'size' and 'origin'
 %
-% OUTPUT: no outputs but file(s) be created.
+% OUTPUT: no outputs but file(s) will be created.
 %
 % Bart Bolsterlee
 % Neuroscience Research Australia
 % 29/3/2021
+% 
+% change log:
+% 3/2/2022: only allows 'padding' and 'space' as optional arguments to make
+% the file compatible with ShapeWorks v6.2.1 ('origin' and and 'size' are no
+% longer available as input arguments to mesh-to-dt)
 
 p = inputParser;
 addRequired(p,'stlFile',@(x) exist(x,'file')==2)
 addParameter(p,'distmap_signed',[])
 addParameter(p,'distmap_abs',[])
-addParameter(p,'spacex',1)
-addParameter(p,'spacey',1)
-addParameter(p,'spacez',1)
-addParameter(p,'sizex',[])
-addParameter(p,'sizey',[])
-addParameter(p,'sizez',[])
-addParameter(p,'originx',[])
-addParameter(p,'originy',[])
-addParameter(p,'originz',[])
-addParameter(p,'padding',[])
+addParameter(p,'spacex',1,@isscalar) % voxel size of distance map in x-direction
+addParameter(p,'spacey',1,@isscalar)
+addParameter(p,'spacez',1,@isscalar)
+addParameter(p,'padding',5,@isscalar)
 parse(p,stlFile,varargin{:});
 
 stlFile        = p.Results.stlFile;
 distmap_signed = p.Results.distmap_signed;
 distmap_abs    = p.Results.distmap_abs;
-originx        = p.Results.originx;
-originy        = p.Results.originy;
-originz        = p.Results.originz;
-sizex          = p.Results.sizex;
-sizey          = p.Results.sizey;
-sizez          = p.Results.sizez;
-spacex         = p.Results.spacex;
-spacey         = p.Results.spacey;
-spacez         = p.Results.spacez;
-
-if ~isempty(p.Results.padding)
-    fprintf('padding of %.2f is provided. ''origin'' and ''size'' input arguments will be overwritten (if provided)\n',p.Results.padding)
-    FV = stlread(stlFile);
-    m = min(FV.Points);
-    r = range(FV.Points);
-    pad = p.Results.padding;
-    
-    originx = m(1)-pad;
-    originy = m(2)-pad;
-    originz = m(3)-pad;
-    sizex   = ceil((r(1)+2*pad) ./ p.Results.spacex);
-    sizey   = ceil((r(2)+2*pad) ./ p.Results.spacey);
-    sizez   = ceil((r(3)+2*pad) ./ p.Results.spacez);
-end
 
 delete_signed_distmap = false;
 if isempty(distmap_signed)
@@ -78,30 +60,18 @@ if isempty(distmap_signed)
     end
 end
 
-% Build shapeworks command
-shapeworks_cmd = sprintf('shapeworks read-mesh --name="%s" mesh-to-dt',...
-    stlFile);
-
-% Optional inputs
-inputList = {'originx','originy','originz',...
-    'sizex','sizey','sizez',...
-    'spacex','spacey','spacez'};
-for nr = 1 : length(inputList)
-    value = eval(inputList{nr});
-    if ~isempty(value)
-        shapeworks_cmd = [shapeworks_cmd sprintf(' --%s=%.3f',...
-            inputList{nr},value)];
-    end
-end
-shapeworks_cmd = [shapeworks_cmd sprintf(' writeimage --name="%s"',...
-    distmap_signed)];
-
 % Call ShapeWorks to build the distance map.
+
+% Build shapeworks command
+shapeworks_cmd = sprintf('shapeworks read-mesh --name="%s" mesh-to-dt --sx=%.3f --sy=%.3f --sz=%.3f --pad=%.3f writeimage --name="%s"',...
+    stlFile,p.Results.spacex,p.Results.spacey,p.Results.spacez,p.Results.padding,distmap_signed);
+
 
 if exist(fileparts(distmap_signed),'dir')~=7
     mkdir(fileparts(distmap_signed))
 end
 [status,cmdout] = system(shapeworks_cmd);
+
 if contains(cmdout,'is not recognized as an internal or external command')
     error('shapeworks not found as an external command. Please install ShapeWorks and try again.')
 end

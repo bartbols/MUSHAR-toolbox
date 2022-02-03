@@ -21,7 +21,7 @@ function [FV_aligned,T] = rigid_align_surface(refSurface,sourceSurface,alignedSu
 
 % alignedSurface = fullfile(tempdir,'aligned.stl');
 if exist(alignedSurface,'file')==2;delete(alignedSurface);end
-shapeworks_cmd = sprintf('shapeworks read-mesh --name=%s transform-mesh --target=%s --type=%s --method=icp --iterations=%d write-mesh --name=%s',...
+shapeworks_cmd = sprintf('shapeworks read-mesh --name=%s transform-mesh --target=%s --type=%s --iterations=%d write-mesh --name=%s',...
         sourceSurface,refSurface,'rigid',100,alignedSurface);
 [status,cmdout] = system(shapeworks_cmd);
 

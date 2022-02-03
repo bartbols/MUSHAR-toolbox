@@ -17,7 +17,7 @@ A MATLAB toolbox for three-dimensional reconstruction and analysis of *MU*scle *
 * Add the MUSHAR-toolbox to the Matlab path.
 
 The following software tools should be installed and made available on the command line:
-* [Shapeworks](http://sciinstitute.github.io/ShapeWorks/) (developed and tested in version 6.0.0-RC9)
+* [Shapeworks](http://sciinstitute.github.io/ShapeWorks/) (tested in version 6.2.1 - older versions may not be compatible)
 * [Elastix](https://elastix.lumc.nl/) (developed and tested in version 4.7)
 
 ## Getting started
