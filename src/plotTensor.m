@@ -102,6 +102,10 @@ incl = mask(:)==1;
 tensor = tensor(incl,:,:);
 n = size(tensor,1);
 
+if n == 0 % nothing to plot
+    varargout{1}=[];
+    return
+end
 % If custom color data is provided, check that it's of the same length as
 % the tensor field.
 if ~isempty(custom_cdata)
