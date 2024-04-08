@@ -19,6 +19,7 @@ A MATLAB toolbox for three-dimensional reconstruction and analysis of *MU*scle *
 The following software tools should be installed and made available on the command line:
 * [Shapeworks](http://sciinstitute.github.io/ShapeWorks/) (tested in version 6.2.1 - older versions may not be compatible)
 * [Elastix](https://elastix.lumc.nl/) (developed and tested in version 4.7)
+* [Convert3D](http://www.itksnap.org/pmwiki/pmwiki.php?n=Downloads.C3D)
 
 ## Getting started
 * Run the demo scripts to  guide you through the main steps.
