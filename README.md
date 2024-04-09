@@ -28,7 +28,8 @@ The following software tools should be installed and made available on the comma
 ## Citation
 Please cite the following paper when using this toolbox:
 
-Bolsterlee, B., A new framework for analysis of three-dimensional shape and architecture of human skeletal muscles from in vivo imaging data. Journal of Applied Physiology, in press. [link](http://doi.org/10.1152/japplphysiol.00638.2021)
+Bolsterlee, B., 2022. A new framework for analysis of three-dimensional shape and architecture of human skeletal muscles from in vivo imaging data. Journal of Applied Physiology 132, p712-725.
+ [link](http://doi.org/10.1152/japplphysiol.00638.2021)
 
 (Or read the preprint [here](https://doi.org/10.1101/2021.09.08.459536).)
 
