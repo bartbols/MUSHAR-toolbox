@@ -20,7 +20,7 @@
 
 // ********* Transformation *********
 
-(FinalGridSpacingInPhysicalUnits 20 20 20) 
+(FinalGridSpacingInPhysicalUnits 10 10 10) 
 (HowToCombineTransforms "Compose")
 
 // ********* Similarity measure *********
